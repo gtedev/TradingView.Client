@@ -45,7 +45,7 @@ module Client =
 
             let! response = httpClient.PostAsync(uri, form)
 
-            let sessionId =
+            let sessionIdData =
                 response.Headers
                 |> List.ofSeq
                 |> List.tryFind (fun x -> x.Key = "Set-Cookie")
@@ -55,5 +55,5 @@ module Client =
 
             // let! body = response.Content.ReadAsStringAsync ()
 
-            return sessionId
+            return sessionIdData
         }
