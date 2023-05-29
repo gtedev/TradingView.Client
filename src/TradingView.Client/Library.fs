@@ -54,7 +54,7 @@ let connect username password =
             response.Headers
             |> Seq.tryFind (fun kvp -> kvp.Key = "Set-Cookie")
             |> Option.map (fun kvp -> kvp.Value)
-            |> Option.bind (Seq.tryFind (fun x -> x.Contains "sessionid"))
+            |> Option.bind (Seq.tryFind (fun x -> x.StartsWith "sessionid"))
             |> Option.map getSessionIdData
 
         // let! body = response.Content.ReadAsStringAsync ()
