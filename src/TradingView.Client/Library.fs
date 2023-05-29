@@ -40,7 +40,7 @@ module Client =
 
     let connect username password =
         task {
-            let httpClient = new HttpClient()
+            use httpClient = new HttpClient()
             let uri = Uri("https://www.tradingview.com/accounts/signin/")
 
             httpClient.DefaultRequestHeaders.Add("origin", "https://www.tradingview.com")
