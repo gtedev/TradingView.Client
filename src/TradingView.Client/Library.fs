@@ -21,6 +21,12 @@ let private (|Domain|) =
 let private toLower (value: string) = value.Trim().ToLowerInvariant()
 
 let private extractSessionIdData (sessionIdData: string) =
+    // Example of sessionId data returned by TradingView:
+    //
+    // sessionid=12345; Domain=.tradingview.com; expires=Wed, 30 Aug 2023 22:14:50 GMT; HttpOnly; Max-Age=8035200; Path=/; SameSite=Lax; Secure
+    //
+    // We choose below to just extract: sessionid, Domain and expires
+    //
     let result =
         sessionIdData.Split(";")
         |> Array.map (fun x -> x.Split("="))
