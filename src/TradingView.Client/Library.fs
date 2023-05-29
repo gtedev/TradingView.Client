@@ -20,7 +20,7 @@ let private (|Domain|) =
 
 let private toLower (value: string) = value.Trim().ToLowerInvariant()
 
-let private getSessionIdData (sessionIdData: string) =
+let private extractSessionIdData (sessionIdData: string) =
     let result =
         sessionIdData.Split(";")
         |> Array.map (fun x -> x.Split("="))
@@ -55,7 +55,7 @@ let connect username password =
             |> Seq.tryFind (fun kvp -> kvp.Key = "Set-Cookie")
             |> Option.map (fun kvp -> kvp.Value)
             |> Option.bind (Seq.tryFind (fun x -> x.StartsWith "sessionid"))
-            |> Option.map getSessionIdData
+            |> Option.map extractSessionIdData
 
         // let! body = response.Content.ReadAsStringAsync ()
 
