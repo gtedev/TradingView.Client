@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "devDependencies": {
+    "husky": "^8.0.3"
+  },
+  "scripts": {
+    "prepare": "husky install",
+    "preinstall": "dotnet tool restore",
+    "prebuild": "dotnet paket restore",
+    "build": "dotnet build && dotnet fantomas -r .",
+    "unittest": "dotnet run --project tests/TradingView.Client.Tests"
+  }
+}

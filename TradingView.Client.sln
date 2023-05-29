@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TradingView.Client", "src\TradingView.Client\TradingView.Client.fsproj", "{09AFBCBA-C55E-4766-9041-4BD9183FD98A}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TradingView.Client.Tests", "tests\TradingView.Client.Tests\TradingView.Client.Tests.fsproj", "{5165DC70-B40C-425F-A964-BD6ABC44A355}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{09AFBCBA-C55E-4766-9041-4BD9183FD98A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09AFBCBA-C55E-4766-9041-4BD9183FD98A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09AFBCBA-C55E-4766-9041-4BD9183FD98A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09AFBCBA-C55E-4766-9041-4BD9183FD98A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5165DC70-B40C-425F-A964-BD6ABC44A355}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5165DC70-B40C-425F-A964-BD6ABC44A355}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5165DC70-B40C-425F-A964-BD6ABC44A355}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5165DC70-B40C-425F-A964-BD6ABC44A355}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
