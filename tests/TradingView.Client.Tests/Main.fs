@@ -5,13 +5,10 @@ open TradingView.Client
 
 [<EntryPoint>]
 let main args =
-
-    let login = ""
+    let username = ""
     let password = ""
 
-    Client.connect login password
-    |> Async.AwaitTask
-    |> Async.RunSynchronously
-    |> ignore
+    let result =
+        Client.connect username password |> Async.AwaitTask |> Async.RunSynchronously
 
     Tests.runTestsInAssemblyWithCLIArgs [ No_Spinner ] args
