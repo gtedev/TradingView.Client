@@ -10,23 +10,31 @@ module Client =
           Expires: DateTimeOffset option
           Domain: string option }
 
-    let getSessionIdData (sessionIdData: string) =
+    let private (|SessionId|) =
+        List.tryFind (fun (key, _) -> key = "sessionid") >> Option.map snd
+
+    let private (|Expires|) =
+        List.tryFind (fun (key, _) -> key = "expires")
+        >> Option.map (snd >> DateTimeOffset.Parse)
+
+    let private (|Domain|) =
+        List.tryFind (fun (key, _) -> key = "domain") >> Option.map snd
+
+    let private toLower (value: string) = value.Trim().ToLowerInvariant()
+
+    let private getSessionIdData (sessionIdData: string) =
         let result =
             sessionIdData.Split(";")
             |> List.ofArray
             |> List.map (fun x -> x.Split("="))
             |> List.choose (fun x ->
                 match x with
-                | x when x.Length = 2 -> Some(x[0].Trim().ToLowerInvariant(), x[1].Trim().ToLowerInvariant())
+                | x when x.Length = 2 -> Some(x[0] |> toLower, x[1] |> toLower)
                 | _ -> None)
-            |> fun values ->
-
-                { SessionId = values |> List.tryFind (fun (key, _) -> key = "sessionid") |> Option.map snd
-                  Expires =
-                    values
-                    |> List.tryFind (fun (key, _) -> key = "expires")
-                    |> Option.map (snd >> DateTimeOffset.Parse)
-                  Domain = values |> List.tryFind (fun (key, _) -> key = "domain") |> Option.map snd }
+            |> fun (SessionId sessionId & Expires expireTime & Domain domain) ->
+                { SessionId = sessionId
+                  Expires = expireTime
+                  Domain = domain }
 
         result
 
@@ -50,7 +58,7 @@ module Client =
                 |> List.ofSeq
                 |> List.tryFind (fun x -> x.Key = "Set-Cookie")
                 |> Option.map (fun kvps -> List.ofSeq kvps.Value)
-                |> Option.bind (fun values -> values |> List.tryFind (fun x -> x.Contains "sessionid"))
+                |> Option.bind (List.tryFind (fun x -> x.Contains "sessionid"))
                 |> Option.map getSessionIdData
 
             // let! body = response.Content.ReadAsStringAsync ()
