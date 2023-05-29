@@ -1,67 +1,65 @@
-﻿namespace TradingView.Client
+﻿module TradingViewClient
 
 open System
 open System.Net.Http
 
-module Client =
+type SessionIdData =
+    { SessionId: string option
+      Expires: DateTimeOffset option
+      Domain: string option }
 
-    type SessionIdData =
-        { SessionId: string option
-          Expires: DateTimeOffset option
-          Domain: string option }
+let private (|SessionId|) =
+    List.tryFind (fun (key, _) -> key = "sessionid") >> Option.map snd
 
-    let private (|SessionId|) =
-        List.tryFind (fun (key, _) -> key = "sessionid") >> Option.map snd
+let private (|Expires|) =
+    List.tryFind (fun (key, _) -> key = "expires")
+    >> Option.map (snd >> DateTimeOffset.Parse)
 
-    let private (|Expires|) =
-        List.tryFind (fun (key, _) -> key = "expires")
-        >> Option.map (snd >> DateTimeOffset.Parse)
+let private (|Domain|) =
+    List.tryFind (fun (key, _) -> key = "domain") >> Option.map snd
 
-    let private (|Domain|) =
-        List.tryFind (fun (key, _) -> key = "domain") >> Option.map snd
+let private toLower (value: string) = value.Trim().ToLowerInvariant()
 
-    let private toLower (value: string) = value.Trim().ToLowerInvariant()
+let private getSessionIdData (sessionIdData: string) =
+    let result =
+        sessionIdData.Split(";")
+        |> List.ofArray
+        |> List.map (fun x -> x.Split("="))
+        |> List.choose (fun x ->
+            match x with
+            | x when x.Length = 2 -> Some(x[0] |> toLower, x[1] |> toLower)
+            | _ -> None)
+        |> fun (SessionId sessionId & Expires expireTime & Domain domain) ->
+            { SessionId = sessionId
+              Expires = expireTime
+              Domain = domain }
 
-    let private getSessionIdData (sessionIdData: string) =
-        let result =
-            sessionIdData.Split(";")
-            |> List.ofArray
-            |> List.map (fun x -> x.Split("="))
-            |> List.choose (fun x ->
-                match x with
-                | x when x.Length = 2 -> Some(x[0] |> toLower, x[1] |> toLower)
-                | _ -> None)
-            |> fun (SessionId sessionId & Expires expireTime & Domain domain) ->
-                { SessionId = sessionId
-                  Expires = expireTime
-                  Domain = domain }
+    result
 
-        result
+let connect username password =
+    task {
+        use httpClient = new HttpClient()
+        let uri = Uri("https://www.tradingview.com/accounts/signin/")
 
-    let connect username password =
-        task {
-            use httpClient = new HttpClient()
-            let uri = Uri("https://www.tradingview.com/accounts/signin/")
+        httpClient.DefaultRequestHeaders.Add("origin", "https://www.tradingview.com")
+        httpClient.DefaultRequestHeaders.Add("referer", "https://www.tradingview.com")
 
-            httpClient.DefaultRequestHeaders.Add("origin", "https://www.tradingview.com")
-            httpClient.DefaultRequestHeaders.Add("referer", "https://www.tradingview.com")
+        let form = new MultipartFormDataContent()
+        form.Add(new StringContent(username), "username")
+        form.Add(new StringContent(password), "password")
+        form.Add(new StringContent("on"), "remember")
 
-            let form = new MultipartFormDataContent()
-            form.Add(new StringContent(username), "username")
-            form.Add(new StringContent(password), "password")
-            form.Add(new StringContent("on"), "remember")
+        let! response = httpClient.PostAsync(uri, form)
 
-            let! response = httpClient.PostAsync(uri, form)
+        let sessionIdData =
+            response.Headers
+            |> List.ofSeq
+            |> List.tryFind (fun x -> x.Key = "Set-Cookie")
+            |> Option.map (fun kvps -> List.ofSeq kvps.Value)
+            |> Option.bind (List.tryFind (fun x -> x.Contains "sessionid"))
+            |> Option.map getSessionIdData
 
-            let sessionIdData =
-                response.Headers
-                |> List.ofSeq
-                |> List.tryFind (fun x -> x.Key = "Set-Cookie")
-                |> Option.map (fun kvps -> List.ofSeq kvps.Value)
-                |> Option.bind (List.tryFind (fun x -> x.Contains "sessionid"))
-                |> Option.map getSessionIdData
+        // let! body = response.Content.ReadAsStringAsync ()
 
-            // let! body = response.Content.ReadAsStringAsync ()
-
-            return sessionIdData
-        }
+        return sessionIdData
+    }
