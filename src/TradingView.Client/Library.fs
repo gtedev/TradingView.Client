@@ -9,23 +9,22 @@ type SessionIdData =
       Domain: string option }
 
 let private (|SessionId|) =
-    List.tryFind (fun (key, _) -> key = "sessionid") >> Option.map snd
+    Array.tryFind (fun (key, _) -> key = "sessionid") >> Option.map snd
 
 let private (|Expires|) =
-    List.tryFind (fun (key, _) -> key = "expires")
+    Array.tryFind (fun (key, _) -> key = "expires")
     >> Option.map (snd >> DateTimeOffset.Parse)
 
 let private (|Domain|) =
-    List.tryFind (fun (key, _) -> key = "domain") >> Option.map snd
+    Array.tryFind (fun (key, _) -> key = "domain") >> Option.map snd
 
 let private toLower (value: string) = value.Trim().ToLowerInvariant()
 
 let private getSessionIdData (sessionIdData: string) =
     let result =
         sessionIdData.Split(";")
-        |> List.ofArray
-        |> List.map (fun x -> x.Split("="))
-        |> List.choose (fun x ->
+        |> Array.map (fun x -> x.Split("="))
+        |> Array.choose (fun x ->
             match x with
             | x when x.Length = 2 -> Some(x[0] |> toLower, x[1] |> toLower)
             | _ -> None)
