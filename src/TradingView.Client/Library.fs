@@ -3,11 +3,6 @@
 open System
 open System.Net.Http
 
-type SessionIdData =
-    { SessionId: string option
-      Expires: DateTimeOffset option
-      Domain: string option }
-
 let private (|SessionId|) =
     Array.tryFind (fun (key, _) -> key = "sessionid") >> Option.map snd
 
@@ -66,4 +61,39 @@ let connect username password =
         // let! body = response.Content.ReadAsStringAsync ()
 
         return sessionIdData
+    }
+
+let removeAccess pineId userName (sessionId: string) =
+    task {
+        use httpClient = new HttpClient()
+        let uri = Uri("https://www.tradingview.com/pine_perm/remove/")
+
+        httpClient.DefaultRequestHeaders.Add("origin", "https://www.tradingview.com")
+        httpClient.DefaultRequestHeaders.Add("cookie", $"sessionid={sessionId}")
+
+        let form = new MultipartFormDataContent()
+        form.Add(new StringContent(userName), "pine_id")
+        form.Add(new StringContent(pineId), "username_recip")
+
+        let! response = httpClient.PostAsync(uri, form)
+
+        return response
+    }
+
+let addAccess pineId userName (sessionId: string) (ExpirationType expirationType) =
+    task {
+        use httpClient = new HttpClient()
+        let uri = Uri("https://www.tradingview.com/pine_perm/add/")
+
+        httpClient.DefaultRequestHeaders.Add("origin", "https://www.tradingview.com")
+        httpClient.DefaultRequestHeaders.Add("cookie", $"sessionid={sessionId}")
+
+        let form = new MultipartFormDataContent()
+        form.Add(new StringContent(userName), "pine_id")
+        form.Add(new StringContent(pineId), "username_recip")
+        form.Add(new StringContent(expirationType), "expiration")
+
+        let! response = httpClient.PostAsync(uri, form)
+
+        return response
     }
